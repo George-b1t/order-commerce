@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: delivery-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: delivery-service
+  template:
+    metadata:
+      labels:
+        app: delivery-service
+    spec:
+      containers:
+        - name: delivery-service
+          image: myrepo/delivery-service:latest
+          env:
+            - name: DB_CONN_STRING
+              value: "postgres://postgres:postgres@postgres-svc:5432/mydb?sslmode=disable"
+            - name: RABBITMQ_URL
+              value: "amqp://guest:guest@rabbitmq-svc:5672/"

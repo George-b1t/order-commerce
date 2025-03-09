@@ -1,0 +1,82 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Login no Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Order Service
+        run: |
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          ORDER_IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/order-service:${TIMESTAMP}"
+
+          # Build
+          docker build -t "$ORDER_IMAGE" ./order-service
+          docker push "$ORDER_IMAGE"
+
+          # Exportar a variável para passos seguintes
+          echo "ORDER_IMAGE=$ORDER_IMAGE" >> $GITHUB_ENV
+
+      - name: Build and push Payment Service
+        run: |
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          PAYMENT_IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/payment-service:${TIMESTAMP}"
+
+          docker build -t "$PAYMENT_IMAGE" ./payment-service
+          docker push "$PAYMENT_IMAGE"
+
+          echo "PAYMENT_IMAGE=$PAYMENT_IMAGE" >> $GITHUB_ENV
+
+      - name: Build and push Delivery Service
+        run: |
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          DELIVERY_IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/delivery-service:${TIMESTAMP}"
+
+          docker build -t "$DELIVERY_IMAGE" ./delivery-service
+          docker push "$DELIVERY_IMAGE"
+
+          echo "DELIVERY_IMAGE=$DELIVERY_IMAGE" >> $GITHUB_ENV
+          
+      - name: Atualizar deployment.yaml (sed)
+        run: |
+          # Carregamos as variáveis definidas acima
+          echo "Usando ORDER_IMAGE=$ORDER_IMAGE"
+          echo "Usando PAYMENT_IMAGE=$PAYMENT_IMAGE"
+          echo "Usando DELIVERY_IMAGE=$DELIVERY_IMAGE"
+
+          # Substitui a imagem do Order Service
+          sed -i "s|\(image: \).*order-service:.*|\1$ORDER_IMAGE|" order-service/k8s/deployment.yaml
+
+          # Substitui a imagem do Payment Service
+          sed -i "s|\(image: \).*payment-service:.*|\1$PAYMENT_IMAGE|" payment-service/k8s/deployment.yaml
+
+          # Substitui a imagem do Delivery Service
+          sed -i "s|\(image: \).*delivery-service:.*|\1$DELIVERY_IMAGE|" delivery-service/k8s/deployment.yaml
+
+      - name: Commit e push das mudanças no repositório
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "github-actions"
+          
+          # Verifica se houve mudanças
+          if [ -n "$(git status --porcelain)" ]; then
+            git add .
+            git commit -m "Atualizando imagens: order=${ORDER_IMAGE}, payment=${PAYMENT_IMAGE}, delivery=${DELIVERY_IMAGE}"
+            git push
+          else
+            echo "Nenhuma mudança a commitar."
+          fi
