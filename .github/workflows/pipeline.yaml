@@ -59,13 +59,13 @@ jobs:
           echo "Usando DELIVERY_IMAGE=$DELIVERY_IMAGE"
 
           # Substitui a imagem do Order Service
-          sed -i "s|\(image: \).*order-service:.*|\1$ORDER_IMAGE|" order-service/k8s/deployment.yaml
+          sed -i "s|\(image: \).*order-service:.*|\1$ORDER_IMAGE|" k8s/order-deployment.yaml
 
           # Substitui a imagem do Payment Service
-          sed -i "s|\(image: \).*payment-service:.*|\1$PAYMENT_IMAGE|" payment-service/k8s/deployment.yaml
+          sed -i "s|\(image: \).*payment-service:.*|\1$PAYMENT_IMAGE|" k8s/payment-deployment.yaml
 
           # Substitui a imagem do Delivery Service
-          sed -i "s|\(image: \).*delivery-service:.*|\1$DELIVERY_IMAGE|" delivery-service/k8s/deployment.yaml
+          sed -i "s|\(image: \).*delivery-service:.*|\1$DELIVERY_IMAGE|" k8s/delivery-deployment.yaml
 
       - name: Commit e push das mudanças no repositório
         run: |
