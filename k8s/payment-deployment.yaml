@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: payment-service
-          image: gscjr/payment-service:20250310001425
+          image: gscjr/payment-service:20250310002106
           env:
             - name: RABBITMQ_URL
               value: "amqp://guest:guest@rabbitmq-svc:5672/"

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: delivery-service
-          image: gscjr/delivery-service:20250310001441
+          image: gscjr/delivery-service:20250310002119
           env:
             - name: DB_CONN_STRING
               value: "postgres://postgres:postgres@postgres-svc:5432/mydb?sslmode=disable"

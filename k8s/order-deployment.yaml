@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: order-service
-          image: gscjr/order-service:20250310001354
+          image: gscjr/order-service:20250310002037
           ports:
             - containerPort: 8080
           env:
